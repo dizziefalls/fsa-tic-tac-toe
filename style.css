@@ -1,0 +1,51 @@
+body{
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+h1,
+#content {
+  padding: 1rem 2rem;
+}
+
+h1 {
+  padding: 0;
+  margin: 2rem 3rem;
+  text-align: left;
+}
+
+#content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.board {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 30vw;
+  margin-bottom: 2rem;
+}
+
+.cell {
+  border: 1px solid darkblue;
+  padding: 2rem;
+}
+
+.player-input{
+  display: flex;
+}
+
+.player-input > div {
+  display: flex;
+  flex-direction: column;
+  margin-right: 2rem;
+}
+
+.player-input > div > label {
+  margin-bottom: .5rem;
+}
