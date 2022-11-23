@@ -31,9 +31,16 @@ h1 {
   margin-bottom: 2rem;
 }
 
+
+/* Set a static width for a 3x3 grid */
 .cell {
   border: 1px solid darkblue;
-  padding: 2rem;
+  padding: 1rem;
+  min-width: 20%;
+  flex-basis: 50px;
+  text-align: center;
+  font-size: 48px;
+  flex-shrink: 0;
 }
 
 .player-input{
