@@ -107,6 +107,7 @@ function processWin(state, winner){
     state.playerPoints[1]++;
   }
   console.log(`The winner is: ${winner}!`)
+  // Add reset button and block click listener until called
   resetBoard();
 }
 
@@ -135,7 +136,10 @@ function printPage(state){
       }
     }
   }
+}
 
+function tick(state) {
+  printPage(state);
   checkForWin(state);
 }
 
@@ -167,10 +171,9 @@ function resetBoard(state){
 resetState();
 populateBoard();
 //See if this can be replaced by calling printPage on every click
-//function tick(){
-  setInterval(() => {
-    printPage(state)
+setInterval(() => {
+    tick(state)
   }, 50)
-  //}
 
-//add listeners to inputs and set name variables
+
+//TODO: Clicking too quickly throws a type error line:121. Consider turning off click listener until board is updated
