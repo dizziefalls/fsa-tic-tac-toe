@@ -22,8 +22,7 @@ function addBoardListener(){
 }
 
 function removeBoardListener(){
-  board.removeEventListener('click', boardListener
-  )
+  board.removeEventListener('click', boardListener)
 }
 
 p1Input.addEventListener('input', event => {
@@ -83,7 +82,6 @@ function setPlayerName(event, state){
   }
 }
 
-
 function checkForWin(state){
   //row win: 0j, 1j, 2j 
   //col win: i0, i1, i2
@@ -135,7 +133,7 @@ function checkForWin(state){
         }
       })
     })
-    //return !nullCount;
+    return !nullCount;
   }
 
   if (draw()){
@@ -176,22 +174,20 @@ function toggleReset(event, state){
 //Move event handler funcs to separate category.
 function markBoard(event, state){
   let cellId;
-  //if(!event.target.id === 'reset-button') {
-    if (event.target.classList[0] === 'cell-text'){
-      cellId = event.target.parentElement.id.slice(5).split('');
-    }
-    else {
-      cellId = event.target.id.slice(5).split('');
-    }
-    console.log(cellId);
-    const row = cellId[0];
-    const col = cellId[1];
-    // will have to update for computer
-    if(!state.board[row][col]) {
-      state.board[row][col] = state.playerMarks[state.turn%2];
-      state.turn++;
-    }
-  //}
+  if (event.target.classList[0] === 'cell-text'){
+    cellId = event.target.parentElement.id.slice(5).split('');
+  }
+  else {
+    cellId = event.target.id.slice(5).split('');
+  }
+  console.log(cellId);
+  const row = cellId[0];
+  const col = cellId[1];
+  // will have to update for computer
+  if(!state.board[row][col]) {
+    state.board[row][col] = state.playerMarks[state.turn%2];
+    state.turn++;
+  }
 }
 
 function updatePoints(state){
@@ -203,7 +199,6 @@ function updatePoints(state){
 }
 
 function printBoard(state){
-  //const boardChildren = [...board.childNodes];
   const cells = [...document.querySelectorAll('.cell-text')]
 
   for (let i = 0; i < state.board.length; i++){
@@ -221,7 +216,7 @@ function printPage(state){
 }
 
 function tick(event, state){
-  //resetting the listeners like this solves the overclicking issue, but  then introduces a hardlock to the game... I'll leave them for now, but please don't click too fast.
+  //resetting the listeners like this solves the overclicking issue, but then introduces a hardlock to the game... I'll leave them for now, but please don't click too fast.
   removeBoardListener();
   if (!(event.target.id === 'reset-button')){
     markBoard(event, state);
