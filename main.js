@@ -22,20 +22,18 @@ p2Input.addEventListener('input', event => {
 //Needs a rewrite to separate rows for nicer layout
 function populateBoard(){
 
-  for (let i = 0; i < 9; i++){
-    const dummyCell = document.createElement('div');
-    // to match id to board array indices
-    let rowNum = 0;
-    if (i > 2 && i < 6) {
-      rowNum = 1;
+  for (let i = 0; i < 3; i++){
+    const dummyRow = document.createElement('div');
+    dummyRow.classList.add('row');
+    dummyRow.id = `row-${i}`;
+    board.appendChild(dummyRow);
+    for (let j = 0; j < 3; j++){
+      const dummyCell = document.createElement('div');
+      // to match id to board array indices
+      dummyCell.classList.add('cell')
+      dummyCell.id = `cell-${i}${j}`
+      dummyRow.appendChild(dummyCell);
     }
-    else if (i > 5){
-      rowNum = 2;
-    }
-
-    dummyCell.classList.add('cell')
-    dummyCell.id = `cell-${rowNum}${i%3}`
-    board.appendChild(dummyCell);
   }
 }
 
@@ -66,23 +64,29 @@ function setPlayerName(event, state){
 
 
 function checkForWin(state){
-  //use switch to check for three in a row
   //row win: 0j, 1j, 2j 
   //col win: i0, i1, i2
   //dia win: 00, 11, 22 or 02, 11, 20
   const testBoard = state.board;
 
-  //col win conditions
   //testBoard[0][1]
-  //win[0][1] = 1
-  const colWin = [
-    [[0, 1], [0, 2], [0, 3]],
-    [[1, 1], [1, 2], [1, 3]],
-    [[2, 1], [2, 2], [2, 3]],
+  const winCombinations = [
+    //row wins
+    [[0, 0], [0, 1], [0, 2]],
+    [[1, 0], [1, 1], [1, 2]],
+    [[2, 0], [2, 1], [2, 2]],
+    //col wins
+    [[0, 0], [1, 0], [2, 0]],
+    [[0, 1], [1, 1], [2, 1]],
+    [[0, 2], [1, 2], [2, 2]],
+    //diag
+    [[0, 0], [1, 1], [2, 2]],
+    [[0, 2], [1, 1], [2, 0]]
   ]
+
   //for each win, check if a char is in one of the right locations, then the next two
-  //currently not triggering. step through with debugger.
-  colWin.forEach((win, wIdx) => {
+
+  winCombinations.forEach((win) => {
     // need to find out how to generalize this method
     if ((testBoard[win[0][0]][win[0][1]] === 'x') &&
         (testBoard[win[1][0]][win[1][1]] === 'x') &&
@@ -108,7 +112,7 @@ function processWin(state, winner){
   }
   console.log(`The winner is: ${winner}!`)
   // Add reset button and block click listener until called
-  resetBoard();
+  resetBoard(state);
 }
 
 //Move event handler funcs to separate category.
@@ -124,21 +128,33 @@ function markBoard(event, state){
   }
 }
 
-function printPage(state){
-  //update the page with new values
-  const boardChildren = [...board.childNodes];
+function updatePoints(state){
+  const p1PointDisplay = document.querySelector('.p1-points-name');
+  const p2PointDisplay = document.querySelector('.p2-points-name');
+
+  p1PointDisplay.innerText = `Points: ${state.playerPoints[0]}`;
+  p2PointDisplay.innerText = `Points: ${state.playerPoints[1]}`;
+}
+
+function printBoard(state){
+  //const boardChildren = [...board.childNodes];
+  const cells = [...document.querySelectorAll('.cell')]
 
   for (let i = 0; i < state.board.length; i++){
     for (let j = 0; j < state.board[i].length; j++){
-      if (state.board[i][j]){
         const currentCell = `${i * 3 + j}`
-        boardChildren[currentCell].innerText = state.board[i][j];
-      }
+        cells[currentCell].innerText = state.board[i][j];
     }
   }
 }
 
-function tick(state) {
+function printPage(state){
+  //update the page with new values
+  printBoard(state);
+  updatePoints(state);
+}
+
+function tick(state){
   printPage(state);
   checkForWin(state);
 }
@@ -149,7 +165,7 @@ function resetState(){
   state = {
     playerMarks: ['x', 'o'],
     playerNames: ['', ''],
-    playerPoints: ['',''],
+    playerPoints: ['0','0'],
     currentPlayer: null,
     turn: 0,
     board: [
@@ -165,7 +181,8 @@ function resetBoard(state){
     [null, null, null],
     [null, null, null],
     [null, null, null],
-  ]
+  ],
+  state.turn = 0;
 }
 
 resetState();
@@ -177,3 +194,4 @@ setInterval(() => {
 
 
 //TODO: Clicking too quickly throws a type error line:121. Consider turning off click listener until board is updated
+//Rewrite everything so the GODDAMN marks center

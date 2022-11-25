@@ -27,20 +27,42 @@ h1 {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  width: 30vw;
+  width: 400px;
+  height: 400px;
   margin-bottom: 2rem;
 }
 
+.row {
+  display: flex;
+  min-width: 100%;
+  min-height: 33%;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+#row-0 > div {
+  border-top: none;
+}
+
+.row div:first-child {
+  border-left: none;
+}
+
+.row div:last-child {
+  border-right: none;
+}
+
+.row > div {
+  border-bottom: none;
+}
 
 /* Set a static width for a 3x3 grid */
 .cell {
   border: 1px solid darkblue;
-  padding: 1rem;
-  min-width: 20%;
-  flex-basis: 50px;
+  min-width: 33%;
+  min-height: 100%;
   text-align: center;
   font-size: 48px;
-  flex-shrink: 0;
 }
 
 .player-input{
