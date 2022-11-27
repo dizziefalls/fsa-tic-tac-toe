@@ -87,6 +87,10 @@ h1 {
   margin: 0;
 }
 
+.cell-disabled {
+  pointer-events: none;
+}
+
 .player-input{
   display: flex;
   align-items: center;

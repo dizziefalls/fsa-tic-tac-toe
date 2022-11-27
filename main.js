@@ -108,15 +108,11 @@ function setPlayerName(event, state){
 
 // ******** GAME LOGIC ********
 function checkForWin(state){
-  //row win: 0j, 1j, 2j 
-  //col win: i0, i1, i2
-  //dia win: 00, 11, 22 or 02, 11, 20
   const testBoard = state.board;
 
   //for each win, check if a char is in one of the right locations, then the next two
-
   WIN_COMBONATIONS.forEach((win) => {
-    // need to find out how to generalize this method
+    // would like to find out how to generalize this method
     if ((testBoard[win[0][0]][win[0][1]] === 'x') &&
         (testBoard[win[1][0]][win[1][1]] === 'x') &&
         (testBoard[win[2][0]][win[2][1]] === 'x')) {
@@ -133,21 +129,24 @@ function checkForWin(state){
     }
   })
 
-  const draw = () => {
-    // could probably be more elegant
-    let nullCount = 0;
-    testBoard.forEach(row => {
-      row.forEach(cell => {
-        if (cell === null){
-          nullCount++;
-        }
+  //Don't check for a draw if the game is over.
+  if(state.isGameEnd === false) {
+    const draw = () => {
+      // could probably be more elegant
+      let nullCount = 0;
+      testBoard.forEach(row => {
+        row.forEach(cell => {
+          if (cell === null){
+            nullCount++;
+          }
+        })
       })
-    })
-    return !nullCount;
-  }
-
-  if (draw()){
-    processWin(state, 'draw');
+      return !nullCount;
+    }
+  
+    if (draw()){
+      processWin(state, 'draw');
+    }
   }
 }
 
@@ -207,17 +206,22 @@ function markBoard(event, state){
   let cellId;
   if (event.target.classList[0] === 'cell-text'){
     cellId = event.target.parentElement.id.slice(5).split('');
+    //event.target.parentElement.classList.add('cell-disabled');
   }
-  else {
+  else if (event.target.classList[0] === 'cell') {
     cellId = event.target.id.slice(5).split('');
+    event.target.classList.add('cell-disabled');
   }
   console.log(cellId);
-  const row = cellId[0];
-  const col = cellId[1];
-  // will have to update for computer
-  if(!state.board[row][col]) {
-    state.board[row][col] = state.playerMarks[state.turn%2];
-    state.turn++;
+  if(cellId !== undefined) {
+    const row = cellId[0];
+    const col = cellId[1];
+    // will have to update for computer
+    if(!state.board[row][col]) {
+      state.board[row][col] = state.playerMarks[state.turn%2];
+      state.turn++;
+  
+    }
   }
 }
 
@@ -232,11 +236,26 @@ function updatePoints(state){
 // ******** COMPUTER BEHAVIOR ********
 function compMarkBoard(state){
   //choose a valid location on the board
-  const compysChoice = [0, 0]//compCellChoice(state);
+  const compysChoice = compCellChoice(state);
   //mark the location
   state.board[compysChoice[0]][compysChoice[1]] = 'o';
   //increment the turn
   state.turn++
+}
+
+function compCellChoice(state){
+  //first just grab an open available cell
+  //then update to choose a cell based on an algorithm - minmax is common
+  const availableCells = [];
+  state.board.forEach((row, rIdx) => {
+    row.forEach((cell, cIdx) => {
+      if (cell === null){
+        availableCells.push([rIdx, cIdx]);
+      }
+    })
+  })
+  const compysChoice = Math.floor(Math.random() * availableCells.length);
+  return availableCells[compysChoice];
 }
 
 
@@ -285,6 +304,9 @@ function tick(event, state){
   }
   printPage(state);
 
+
+  // Compy is first in subsequent games
+  // tick is calling compy on in valid clicks
   if(state.isComputerP2){
     compMarkBoard(state);
     setTimeout(() => {
@@ -323,6 +345,15 @@ function resetBoard(state){
     [null, null, null],
   ],
   state.turn = 0;
+  setCellsActive();
+}
+
+function setCellsActive(){
+  board.childNodes.forEach(row => {
+    row.childNodes.forEach(cell =>{
+      cell.classList.remove('cell-disabled')
+    })
+  })
 }
 
 function hardReset(){
