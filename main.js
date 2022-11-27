@@ -176,7 +176,7 @@ function toggleReset(event, state){
     newRoundButton.disabled = true;
     resetBoard(state);
     addBoardListener(state);
-    tick(event, state)
+    printPage(state);
   }
 }
 
@@ -204,11 +204,7 @@ function checkIfBoardPlayed(state){
 //Move event handler funcs to separate category.
 function markBoard(event, state){
   let cellId;
-  if (event.target.classList[0] === 'cell-text'){
-    cellId = event.target.parentElement.id.slice(5).split('');
-    //event.target.parentElement.classList.add('cell-disabled');
-  }
-  else if (event.target.classList[0] === 'cell') {
+  if (event.target.classList[0] === 'cell') {
     cellId = event.target.id.slice(5).split('');
     event.target.classList.add('cell-disabled');
   }
@@ -235,11 +231,9 @@ function updatePoints(state){
 
 // ******** COMPUTER BEHAVIOR ********
 function compMarkBoard(state){
-  //choose a valid location on the board
+  
   const compysChoice = compCellChoice(state);
-  //mark the location
   state.board[compysChoice[0]][compysChoice[1]] = 'o';
-  //increment the turn
   state.turn++
 }
 
@@ -279,6 +273,7 @@ function printPage(state){
 
 //Ensures that markBoard() only receives board elements
 function checkValidMove(event, state) {
+  // check if cell is class disabled
   if (!(event.target.id === 'next-game') && !(event.target.id === 'play-computer')){
     markBoard(event, state);
   }
@@ -303,18 +298,15 @@ function tick(event, state){
     checkIfBoardPlayed(state);
   }
   printPage(state);
+  checkForWin(state)
 
-
-  // Compy is first in subsequent games
-  // tick is calling compy on in valid clicks
-  if(state.isComputerP2){
+  if(state.isComputerP2 && state.isGameEnd === false && state.turn % 2){
     compMarkBoard(state);
     setTimeout(() => {
       printPage(state)
     }, 400);
+    checkForWin(state);
   }
-
-  checkForWin(state);
 }
 
 
@@ -359,7 +351,10 @@ function setCellsActive(){
 function hardReset(){
   const reset = confirm('Are you sure you want to reset? This will wipe all progress. This enables you to toggle the computer player.')
   if (reset){
+    setCellsActive();
     printPage(resetState());
+    removeBoardListener();
+    addBoardListener();
     playComputer.disabled = false;
   }
 }
