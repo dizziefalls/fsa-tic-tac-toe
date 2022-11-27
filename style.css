@@ -5,7 +5,7 @@ body{
   flex-direction: column;
   margin: 0;
   padding: 0;
-  background-color: #94b873;
+  background-color: #a0be78;
   color: #27213C;
   font-size: 18px;
   font-family: 'Libre Baskerville', serif;
@@ -110,6 +110,11 @@ h1 {
   box-shadow: 4px 0 9px 2px rgba(0, 0, 0, .08);
 }
 
+#player-2:disabled {
+  pointer-events: none;
+  opacity: 0.65;
+}
+
 button {
   appearance: none;
   padding: 10px 15px;
@@ -122,9 +127,15 @@ button {
   font-family: 'Libre Baskerville', serif;
   height: 10%;
   letter-spacing: 1px;
+  margin-right: 1rem;
 }
 
 button:disabled {
   pointer-events: none;
   opacity: 0.65;
+}
+
+#reset-button {
+  background-color: #8b1b0c;
+  margin-left: 2rem;
 }

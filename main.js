@@ -3,38 +3,62 @@
 
 // ******** GLOBAL VARIABLES ********
 let state;
+const winCombinations = [
+  //row wins
+  [[0, 0], [0, 1], [0, 2]],
+  [[1, 0], [1, 1], [1, 2]],
+  [[2, 0], [2, 1], [2, 2]],
+  //col wins
+  [[0, 0], [1, 0], [2, 0]],
+  [[0, 1], [1, 1], [2, 1]],
+  [[0, 2], [1, 2], [2, 2]],
+  //diag
+  [[0, 0], [1, 1], [2, 2]],
+  [[0, 2], [1, 1], [2, 0]]
+];
 
 
 // ******** DOM QUERIES ********
 const board = document.querySelector('.board');
 const p1Input = document.querySelector('#player-1');
 const p2Input = document.querySelector('#player-2');
-const resetButton = document.querySelector('#reset-button');
+const newRoundButton = document.querySelector('#next-game');
+const playComputer = document.querySelector('#play-computer');
+const resetButton = document.querySelector('#reset-button')
 
 // ******** EVENT LISTENERS ********
 //very frustrating js nonsense below
 //write a function that calls a function because you can't use parameters in callback functions including the event you need to pass, but if you write an inline arrow function you can't remove the event listener. perfect sense. why can't we just reference the event listener and add a disabled method to it??
 const boardListener = event => {
-  tick(event, state)
+  tick(event, state, winCombinations);
 }
 function addBoardListener(){
-  board.addEventListener('click', boardListener)
+  board.addEventListener('click', boardListener);
 }
 
 function removeBoardListener(){
-  board.removeEventListener('click', boardListener)
+  board.removeEventListener('click', boardListener);
 }
 
 p1Input.addEventListener('input', event => {
-  setPlayerName(event, state)
-})
-p2Input.addEventListener('input', event => {
-  setPlayerName(event, state)
-})
-resetButton.addEventListener('click', event => {
-  toggleReset(event, state);
+  setPlayerName(event, state);
 })
 
+p2Input.addEventListener('input', event => {
+  setPlayerName(event, state);
+})
+
+newRoundButton.addEventListener('click', event => {
+  toggleReset(event, state, winCombinations);
+})
+
+playComputer.addEventListener('click', event => {
+    setComputerPlayer(event, state, winCombinations, p2Input);
+})
+
+resetButton.addEventListener('click', () => {
+  hardReset();
+})
 // ******** UI INIT ********
 //Adding the paras after just using divs so I could center the text was one of the worst decisions I've ever made.
 function populateBoard(){
@@ -82,26 +106,12 @@ function setPlayerName(event, state){
   }
 }
 
-function checkForWin(state){
+// ******** GAME LOGIC ********
+function checkForWin(state, winCombinations){
   //row win: 0j, 1j, 2j 
   //col win: i0, i1, i2
   //dia win: 00, 11, 22 or 02, 11, 20
   const testBoard = state.board;
-
-  //probably should declare as global variable.
-  const winCombinations = [
-    //row wins
-    [[0, 0], [0, 1], [0, 2]],
-    [[1, 0], [1, 1], [1, 2]],
-    [[2, 0], [2, 1], [2, 2]],
-    //col wins
-    [[0, 0], [1, 0], [2, 0]],
-    [[0, 1], [1, 1], [2, 1]],
-    [[0, 2], [1, 2], [2, 2]],
-    //diag
-    [[0, 0], [1, 1], [2, 2]],
-    [[0, 2], [1, 1], [2, 0]]
-  ]
 
   //for each win, check if a char is in one of the right locations, then the next two
 
@@ -156,19 +166,40 @@ function processWin(state, winner){
 function setGameEnd(state){
   if (!state.isGameEnd){
     state.isGameEnd = true;
-    resetButton.disabled = false;
+    newRoundButton.disabled = false;
     removeBoardListener(state);
   }
 }
 
-function toggleReset(event, state){
+function toggleReset(event, state, winCombinations){
   if (state.isGameEnd){
     state.isGameEnd = false;
-    resetButton.disabled = true;
+    newRoundButton.disabled = true;
     resetBoard(state);
     addBoardListener(state);
-    tick(event, state)
+    tick(event, state, winCombinations)
   }
+}
+
+function setComputerPlayer(event, state){
+  state.isComputerP2 = true;
+  state.playerNames[1] = 'Compy!';
+  printPlayers(state, 1);
+  p2Input.disabled = true;
+  playComputer.disabled = true;
+  tick(event, state, winCombinations);
+}
+
+// Disables computer player if the game has begun
+function checkIfBoardPlayed(state){
+  state.board.forEach(row => {
+    row.forEach(cell => {
+      if (cell !== null){
+        playComputer.disabled = true;
+        return
+      }
+    })
+  })
 }
 
 //Move event handler funcs to separate category.
@@ -198,6 +229,7 @@ function updatePoints(state){
   p2PointDisplay.innerText = `Points: ${state.playerPoints[1]}`;
 }
 
+// ******** PAGE UPDATING ********
 function printBoard(state){
   const cells = [...document.querySelectorAll('.cell-text')]
 
@@ -215,24 +247,24 @@ function printPage(state){
   updatePoints(state);
 }
 
-function tick(event, state){
-  //resetting the listeners like this solves the overclicking issue, but then introduces a hardlock to the game... I'll leave them for now, but please don't click too fast.
-  removeBoardListener();
-  if (!(event.target.id === 'reset-button')){
+// Could write a caller function so we don't have to keep passing these parameters everywhere.
+function tick(event, state, winCombinations){
+  if (!(event.target.id === 'next-game') && !(event.target.id === 'play-computer')){
     markBoard(event, state);
   }
+  checkIfBoardPlayed(state);
   printPage(state);
-  checkForWin(state);
-  addBoardListener();
+  checkForWin(state, winCombinations);
 }
 
 
-// ******** STATE BOOTSTRAPING ********
+// ******** STATE BOOTSTRAPING AND HANDLING ********
 function resetState(){
   state = {
     playerMarks: ['x', 'o'],
     playerNames: ['', ''],
     playerPoints: ['0','0'],
+    isComputerP2: false,
     currentPlayer: null,
     turn: 0,
     isGameEnd: false,
@@ -242,6 +274,8 @@ function resetState(){
       [null, null, null],
     ],
   }
+
+  return state;
 }
 
 function resetBoard(state){
@@ -253,6 +287,15 @@ function resetBoard(state){
   state.turn = 0;
 }
 
+function hardReset(){
+  const reset = confirm('Are you sure you want to reset? This will wipe all progress. This enables you to toggle the computer player.')
+  if (reset){
+    printPage(resetState());
+    playComputer.disabled = false;
+  }
+}
+
+// ******** PAGE INIT ********
 resetState();
 populateBoard();
 updatePoints(state);
@@ -261,4 +304,4 @@ addBoardListener(state);
 
 
 //TODO: Clicking too quickly throws a type error line:121. Consider turning off click listener until board is updated
-//Rewrite everything so the GODDAMN marks center
+//FIXME: The next game button might still have some odd behavior
