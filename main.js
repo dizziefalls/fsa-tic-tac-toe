@@ -3,7 +3,7 @@
 
 // ******** GLOBAL VARIABLES ********
 let state;
-const winCombinations = [
+const WIN_COMBONATIONS = [
   //row wins
   [[0, 0], [0, 1], [0, 2]],
   [[1, 0], [1, 1], [1, 2]],
@@ -30,7 +30,7 @@ const resetButton = document.querySelector('#reset-button')
 //very frustrating js nonsense below
 //write a function that calls a function because you can't use parameters in callback functions including the event you need to pass, but if you write an inline arrow function you can't remove the event listener. perfect sense. why can't we just reference the event listener and add a disabled method to it??
 const boardListener = event => {
-  tick(event, state, winCombinations);
+  tick(event, state);
 }
 function addBoardListener(){
   board.addEventListener('click', boardListener);
@@ -49,11 +49,11 @@ p2Input.addEventListener('input', event => {
 })
 
 newRoundButton.addEventListener('click', event => {
-  toggleReset(event, state, winCombinations);
+  toggleReset(event, state);
 })
 
 playComputer.addEventListener('click', event => {
-    setComputerPlayer(event, state, winCombinations, p2Input);
+  setComputerPlayer(state);
 })
 
 resetButton.addEventListener('click', () => {
@@ -107,7 +107,7 @@ function setPlayerName(event, state){
 }
 
 // ******** GAME LOGIC ********
-function checkForWin(state, winCombinations){
+function checkForWin(state){
   //row win: 0j, 1j, 2j 
   //col win: i0, i1, i2
   //dia win: 00, 11, 22 or 02, 11, 20
@@ -115,7 +115,7 @@ function checkForWin(state, winCombinations){
 
   //for each win, check if a char is in one of the right locations, then the next two
 
-  winCombinations.forEach((win) => {
+  WIN_COMBONATIONS.forEach((win) => {
     // need to find out how to generalize this method
     if ((testBoard[win[0][0]][win[0][1]] === 'x') &&
         (testBoard[win[1][0]][win[1][1]] === 'x') &&
@@ -171,23 +171,23 @@ function setGameEnd(state){
   }
 }
 
-function toggleReset(event, state, winCombinations){
+function toggleReset(event, state){
   if (state.isGameEnd){
     state.isGameEnd = false;
     newRoundButton.disabled = true;
     resetBoard(state);
     addBoardListener(state);
-    tick(event, state, winCombinations)
+    tick(event, state)
   }
 }
 
-function setComputerPlayer(event, state){
+function setComputerPlayer(state){
   state.isComputerP2 = true;
   state.playerNames[1] = 'Compy!';
   printPlayers(state, 1);
   p2Input.disabled = true;
   playComputer.disabled = true;
-  tick(event, state, winCombinations);
+  printPage(state);
 }
 
 // Disables computer player if the game has begun
@@ -229,6 +229,17 @@ function updatePoints(state){
   p2PointDisplay.innerText = `Points: ${state.playerPoints[1]}`;
 }
 
+// ******** COMPUTER BEHAVIOR ********
+function compMarkBoard(state){
+  //choose a valid location on the board
+  const compysChoice = [0, 0]//compCellChoice(state);
+  //mark the location
+  state.board[compysChoice[0]][compysChoice[1]] = 'o';
+  //increment the turn
+  state.turn++
+}
+
+
 // ******** PAGE UPDATING ********
 function printBoard(state){
   const cells = [...document.querySelectorAll('.cell-text')]
@@ -247,14 +258,41 @@ function printPage(state){
   updatePoints(state);
 }
 
-// Could write a caller function so we don't have to keep passing these parameters everywhere.
-function tick(event, state, winCombinations){
+//Ensures that markBoard() only receives board elements
+function checkValidMove(event, state) {
   if (!(event.target.id === 'next-game') && !(event.target.id === 'play-computer')){
     markBoard(event, state);
   }
-  checkIfBoardPlayed(state);
+}
+
+function compOr2Player(event, state){
+  if (!state.isComputerP2){
+    checkValidMove(event, state)
+  }
+  else {
+    // if there is a computer, only mark the board on even turns
+    if (!(state.turn % 2)) {
+      checkValidMove(event, state)
+    }
+  }
+}
+
+function tick(event, state){
+  //only mark the board if two-player or it's the user's turn
+  compOr2Player(event, state);
+  if(!state.isComputerP2) {
+    checkIfBoardPlayed(state);
+  }
   printPage(state);
-  checkForWin(state, winCombinations);
+
+  if(state.isComputerP2){
+    compMarkBoard(state);
+    setTimeout(() => {
+      printPage(state)
+    }, 400);
+  }
+
+  checkForWin(state);
 }
 
 
